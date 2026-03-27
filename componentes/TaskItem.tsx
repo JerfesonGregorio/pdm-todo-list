@@ -5,12 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 export default function TaskItem({ task, onRemove }) {
   return (
     <View style={styles.taskContainer}>
-      <Text style={styles.taskText}>{task.text}</Text>
-      
-      <TouchableOpacity 
-        style={styles.deleteButton} 
-        onPress={() => onRemove(task.id)}
-      >
+      <View style={{ flex: 1 }}>
+        <Text style={styles.taskText}>{task.text}</Text>
+        <Text style={styles.details}>
+          📅 {new Date(task.dueDate).toLocaleDateString('pt-BR')} | ⚡ Prioridade: {task.priority}
+        </Text>
+      </View>
+
+      <TouchableOpacity onPress={() => onRemove(task.id)} style={styles.deleteButton}>
         <Ionicons name="trash-outline" size={20} color="#FFF" />
       </TouchableOpacity>
     </View>
@@ -25,22 +27,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    elevation: 1,
-    borderWidth: 1,
-    borderColor: '#EEE',
   },
   taskText: {
-    flex: 1,
     fontSize: 16,
-    color: '#333',
+  },
+  details: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 5,
   },
   deleteButton: {
     backgroundColor: '#FF3B30',
     padding: 10,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
   },
 });

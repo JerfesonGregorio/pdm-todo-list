@@ -4,19 +4,40 @@ import { View, Text, FlatList, StyleSheet } from 'react-native';
 import TaskInput from '@/componentes/TaskInput';
 import TaskItem from '@/componentes/TaskItem';
 
-export default function index() {
+export default function Index() {
   const [tasks, setTasks] = useState([]);
 
-  const handleAddTask = (taskText) => {
+  const handleAddTask = (taskData) => {
     const newTask = {
       id: Date.now().toString(),
-      text: taskText,
+      ...taskData,
     };
-    setTasks((prevTasks) => [...prevTasks, newTask]);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    setTasks((prev) =>
+      [...prev, newTask].sort((a, b) => {
+        const dateA = new Date(a.dueDate);
+        const dateB = new Date(b.dueDate);
+
+        dateA.setHours(0, 0, 0, 0);
+        dateB.setHours(0, 0, 0, 0);
+
+        const diffA = dateA - today;
+        const diffB = dateB - today;
+
+        if (diffA !== diffB) {
+          return diffA - diffB;
+        }
+
+        return a.priority - b.priority;
+      })
+    );
   };
 
   const handleRemoveTask = (id) => {
-    setTasks((prevTasks) => prevTasks.filter((item) => item.id !== id));
+    setTasks((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
@@ -28,13 +49,8 @@ export default function index() {
       <FlatList
         data={tasks}
         keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
         renderItem={({ item }) => (
-          <TaskItem 
-            task={item} 
-            onRemove={handleRemoveTask} 
-          />
+          <TaskItem task={item} onRemove={handleRemoveTask} />
         )}
       />
     </View>
@@ -51,7 +67,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 20,
   },
 });

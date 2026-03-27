@@ -1,65 +1,137 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Keyboard } from 'react-native';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  Modal,
+} from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Platform } from 'react-native';
 
 export default function TaskInput({ onAddTask }) {
-  const [taskText, setTaskText] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [text, setText] = useState('');
+  const [priority, setPriority] = useState('');
+  const [dueDate, setDueDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
 
-  const handleAdd = () => {
-    if (taskText.trim().length === 0) return;
-    
-    onAddTask(taskText);
-    setTaskText('');
-    Keyboard.dismiss();
+  const handleSave = () => {
+    if (!text || !dueDate) return;
+
+    onAddTask({
+      text,
+      priority: Number(priority),
+      dueDate: dueDate.toISOString(),
+    });
+
+    setText('');
+    setPriority('');
+    setDueDate(new Date());
+    setModalVisible(false);
   };
 
+  const onChangeDate = (event, selectedDate) => {
+  setShowPicker(false);
+  if (selectedDate) {
+    setDueDate(selectedDate);
+  }
+};
+
   return (
-    <View style={styles.inputContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite uma nova tarefa..."
-        value={taskText}
-        onChangeText={setTaskText}
-      />
-      <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
-        <Text style={styles.addButtonText}>+</Text>
+    <View>
+      <TouchableOpacity
+        style={styles.openButton}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={styles.openButtonText}>+ Nova tarefa</Text>
       </TouchableOpacity>
+
+      <Modal visible={modalVisible} animationType="slide">
+        <View style={styles.modal}>
+          <Text style={styles.title}>Nova Tarefa</Text>
+
+          <TextInput
+            placeholder="Descrição"
+            style={styles.input}
+            value={text}
+            onChangeText={setText}
+          />
+
+          <TextInput
+            placeholder="Prioridade (1-5)"
+            style={styles.input}
+            keyboardType="numeric"
+            value={priority}
+            onChangeText={setPriority}
+          />
+
+          <TouchableOpacity
+            style={styles.input}
+            onPress={() => setShowPicker(true)}
+          >
+            <Text>
+              📅 {dueDate.toLocaleDateString('pt-BR')}
+            </Text>
+          </TouchableOpacity>
+
+          {showPicker && (
+            <DateTimePicker
+              value={dueDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onChangeDate}
+            />
+          )}
+
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveText}>Salvar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setModalVisible(false)}>
+            <Text style={{ marginTop: 10 }}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  inputContainer: {
-    flexDirection: 'row',
+  openButton: {
+    backgroundColor: '#007BFF',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  openButtonText: {
+    color: '#FFF',
+    textAlign: 'center',
+  },
+  modal: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 22,
     marginBottom: 20,
   },
   input: {
-    flex: 1,
-    height: 50,
     backgroundColor: '#FFF',
+    padding: 15,
     borderRadius: 8,
-    paddingHorizontal: 15,
-    fontSize: 16,
+    marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
-  addButton: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#007BFF',
+  saveButton: {
+    backgroundColor: 'green',
+    padding: 15,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
-    elevation: 2,
   },
-  addButtonText: {
+  saveText: {
     color: '#FFF',
-    fontSize: 24,
-    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
